@@ -9,55 +9,59 @@ import {
   serverTimestamp,
   where,
   doc,
+  getDocs,
 } from "firebase/firestore";
 import { auth, db } from "../firebase-config";
+import messageStore from "../store/messageStore";
+import roomStore from "../store/roomStore";
+import useMessages from "../hooks/useMessages";
 
 const Chat = ({ room }) => {
   const [newMessage, setNewMessage] = useState("");
-  const [messages, setMessages] = useState([]);
+  // const [messages, setMessages] = useState([]);
+  // const [onlineUsers, setOnlineUsers] = useState([]);
+  const { messages, fetchMessages, currentRoom, setCurrentRoom } =
+    messageStore();
+  const { rooms } = roomStore();
+
+  const { allMessages, sendMessage } = useMessages(currentRoom);
+
+  useEffect(() => {
+    setCurrentRoom(room);
+    const unsubscribe = fetchMessages(currentRoom);
+    return () => unsubscribe();
+  }, [currentRoom]);
 
   const messagesRef = collection(db, "messages");
 
-  useEffect(() => {
-    const queryMessages = query(
-      messagesRef,
-      where("room", "==", room),
-      orderBy("createdAt")
-    );
-    const unsubscribe = onSnapshot(queryMessages, (snapShot) => {
-      let messages = [];
-      snapShot.forEach((doc) => {
-        messages.push({ ...doc.data(), id: doc.id });
-      });
-      setMessages(messages);
-    });
-
-    return () => unsubscribe();
-  }, []);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!newMessage) return;
 
-    await addDoc(messagesRef, {
-      text: newMessage,
-      createdAt: serverTimestamp(),
-      user: auth.currentUser.displayName,
-      room,
-    });
+    sendMessage(newMessage, auth.currentUser.displayName);
+
+    // if (newMessage.trim() === "") return;
+    // await addDoc(messagesRef, {
+    //   text: newMessage,
+    //   createdAt: serverTimestamp(),
+    //   user: auth.currentUser.displayName,
+    //   room,
+    // });
 
     setNewMessage("");
   };
 
   const onClearMessage = async () => {
-    let prompt = window.prompt("Enter password to clear history");
-    if (prompt == "ok") {
-      const queryMessages = query(messagesRef, where("room", "==", room));
-      onSnapshot(queryMessages, async (snapShot) => {
+    const prompt = window.prompt("Enter password to clear history");
+    if (prompt === "ok") {
+      try {
+        const queryMessages = query(messagesRef, where("room", "==", room));
+        const snapShot = await getDocs(queryMessages); // Fetch current messages
         snapShot.forEach(async (document) => {
-          await deleteDoc(doc(db, "messages", document.id));
+          await deleteDoc(doc(db, "messages", document.id)); // Delete each document
         });
-      });
+      } catch (error) {
+        console.error("Error clearing messages:", error);
+      }
     } else {
       alert("You don't have access to clear history.");
     }
@@ -67,9 +71,10 @@ const Chat = ({ room }) => {
     <div className="border border-slate-200 rounded-md p-10">
       <div className="bg-gray-800 py-5 rounded-md mb-3">
         <h1 className=" text-3xl font-bold text-center">
-          Welcome to: {room.toUpperCase()}
+          Welcome to: {currentRoom.toUpperCase()}
         </h1>
       </div>
+
       <div className="text-right">
         <button
           onClick={onClearMessage}
@@ -78,6 +83,17 @@ const Chat = ({ room }) => {
           Clear History
         </button>
       </div>
+
+      {/* Online Users List */}
+      {/* <div>
+        <h3>Active Users ({onlineUsers.length})</h3>
+        <ul>
+          {onlineUsers.map((user) => (
+            <li key={user.email}>{user.displayName}</li>
+          ))}
+        </ul>
+      </div> */}
+
       <div className="mb-2">
         {messages.map((message) => (
           <div key={message.id}>
@@ -85,8 +101,9 @@ const Chat = ({ room }) => {
           </div>
         ))}
       </div>
+
       <form onSubmit={handleSubmit} className="">
-        <div className="flex justify-between items-center gap-2">
+        <div className="flex justify-between w-full items-center gap-2">
           <input
             type="text"
             onChange={(e) => setNewMessage(e.target.value)}

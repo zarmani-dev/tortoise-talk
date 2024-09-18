@@ -1,26 +1,50 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Auth from "./components/Auth";
 
 import Cookies from "universal-cookie";
 import Chat from "./components/Chat";
-import { auth } from "./firebase-config";
+import { auth, db } from "./firebase-config";
+import { doc, serverTimestamp, setDoc, updateDoc } from "firebase/firestore";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import RoomList from "./components/RoomList";
 const cookies = new Cookies();
 
 const App = () => {
   const [isAuth, setIsAuth] = useState(cookies.get("auth-token")); // true
+  const [user, setUser] = useState(null);
   const [room, setRoom] = useState(null);
 
   const inputRef = useRef();
 
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (currentUser) {
+        setUser(currentUser);
+      } else {
+        setUser(null);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
   const signUserOut = async () => {
-    await auth.signOut();
+    const userRef = doc(db, "users", user.uid);
+    await updateDoc(userRef, {
+      online: false,
+      lastActive: serverTimestamp(),
+    });
+    signOut(auth);
     cookies.remove("auth-token");
     setIsAuth(null);
   };
 
   return (
-    <main className="h-screen bg-gray-950 text-slate-200">
-      {!isAuth && <Auth setIsAuth={setIsAuth} />}
+    <main className="w-full h-screen bg-gray-950 text-slate-200">
+      {!isAuth && <Auth setIsAuth={setIsAuth} setUser={setUser} />}
+
+      {/* {isAuth && <RoomList />}
+      {isAuth && <Chat />} */}
 
       {isAuth && (
         <div className="container pt-10 px-10 text-right">
