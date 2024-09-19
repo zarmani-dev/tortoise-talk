@@ -15,19 +15,20 @@ import { auth, db } from "../firebase-config";
 import messageStore from "../store/messageStore";
 import roomStore from "../store/roomStore";
 import useMessages from "../hooks/useMessages";
+import { Link, useParams } from "react-router-dom";
 
-const Chat = ({ room }) => {
+const Chat = ({}) => {
   const [newMessage, setNewMessage] = useState("");
-  // const [messages, setMessages] = useState([]);
-  // const [onlineUsers, setOnlineUsers] = useState([]);
+  const { roomId } = useParams();
+
   const { messages, fetchMessages, currentRoom, setCurrentRoom } =
     messageStore();
   const { rooms } = roomStore();
 
-  const { allMessages, sendMessage } = useMessages(currentRoom);
+  const { sendMessage } = useMessages(currentRoom);
 
   useEffect(() => {
-    setCurrentRoom(room);
+    setCurrentRoom(roomId);
     const unsubscribe = fetchMessages(currentRoom);
     return () => unsubscribe();
   }, [currentRoom]);
@@ -36,17 +37,7 @@ const Chat = ({ room }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     sendMessage(newMessage, auth.currentUser.displayName);
-
-    // if (newMessage.trim() === "") return;
-    // await addDoc(messagesRef, {
-    //   text: newMessage,
-    //   createdAt: serverTimestamp(),
-    //   user: auth.currentUser.displayName,
-    //   room,
-    // });
-
     setNewMessage("");
   };
 
@@ -54,7 +45,7 @@ const Chat = ({ room }) => {
     const prompt = window.prompt("Enter password to clear history");
     if (prompt === "ok") {
       try {
-        const queryMessages = query(messagesRef, where("room", "==", room));
+        const queryMessages = query(messagesRef, where("room", "==", roomId));
         const snapShot = await getDocs(queryMessages); // Fetch current messages
         snapShot.forEach(async (document) => {
           await deleteDoc(doc(db, "messages", document.id)); // Delete each document
@@ -68,14 +59,33 @@ const Chat = ({ room }) => {
   };
 
   return (
-    <div className="border border-slate-200 rounded-md p-10">
+    <div className="container p-10 ">
       <div className="bg-gray-800 py-5 rounded-md mb-3">
         <h1 className=" text-3xl font-bold text-center">
           Welcome to: {currentRoom.toUpperCase()}
         </h1>
       </div>
 
-      <div className="text-right">
+      <div className="flex justify-between items-center mb-5">
+        <Link
+          to={"/"}
+          className="bg-slate-300 px-4 py-1 text-gray-950 rounded-md"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+            className="size-6"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M6.75 15.75 3 12m0 0 3.75-3.75M3 12h18"
+            />
+          </svg>
+        </Link>
         <button
           onClick={onClearMessage}
           className="border border-slate-200 px-4 py-1 rounded-md"

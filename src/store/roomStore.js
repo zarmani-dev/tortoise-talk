@@ -1,5 +1,13 @@
 import { create } from "zustand";
-import { collection, onSnapshot, query, where } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  onSnapshot,
+  orderBy,
+  query,
+  serverTimestamp,
+  where,
+} from "firebase/firestore";
 import { db } from "../firebase-config";
 
 const roomStore = create((set) => ({
@@ -8,13 +16,19 @@ const roomStore = create((set) => ({
 
   // Fetch all rooms
   fetchRooms: () => {
-    const q = query(collection(db, "rooms")); // assuming 'rooms' collection exists
+    const q = query(collection(db, "rooms"), orderBy("createAt")); // assuming 'rooms' collection exists
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const rooms = [];
       snapshot.forEach((doc) => rooms.push({ ...doc.data(), id: doc.id }));
       set({ rooms });
     });
     return unsubscribe;
+  },
+
+  createRoom: async (roomName) => {
+    const roomsCollection = collection(db, "rooms");
+    const newRoom = { name: roomName, createAt: serverTimestamp() };
+    await addDoc(roomsCollection, newRoom);
   },
 
   // Fetch users per room
