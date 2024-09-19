@@ -53,7 +53,7 @@ const App = () => {
   };
 
   return (
-    <div>
+    <div className="">
       {!isAuth && <Auth setIsAuth={setIsAuth} setUser={setUser} />}
 
       {/* Sign Out Button */}

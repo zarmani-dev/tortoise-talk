@@ -59,16 +59,16 @@ const Chat = ({}) => {
   };
 
   return (
-    <div className="container p-10 ">
+    <div className="container p-10">
       <div className="bg-gray-800 py-5 rounded-md mb-3">
-        <h1 className=" text-3xl font-bold text-center">
+        <h1 className="text-3xl font-bold text-center">
           Welcome to: {currentRoom.toUpperCase()}
         </h1>
       </div>
 
       <div className="flex justify-between items-center mb-5">
         <Link
-          to={"/"}
+          to="/"
           className="bg-slate-300 px-4 py-1 text-gray-950 rounded-md"
         >
           <svg
@@ -77,7 +77,7 @@ const Chat = ({}) => {
             viewBox="0 0 24 24"
             strokeWidth={1.5}
             stroke="currentColor"
-            className="size-6"
+            className="h-6 w-6"
           >
             <path
               strokeLinecap="round"
@@ -94,16 +94,6 @@ const Chat = ({}) => {
         </button>
       </div>
 
-      {/* Online Users List */}
-      {/* <div>
-        <h3>Active Users ({onlineUsers.length})</h3>
-        <ul>
-          {onlineUsers.map((user) => (
-            <li key={user.email}>{user.displayName}</li>
-          ))}
-        </ul>
-      </div> */}
-
       <div className="mb-2">
         {messages.map((message) => (
           <div key={message.id}>
@@ -112,18 +102,18 @@ const Chat = ({}) => {
         ))}
       </div>
 
-      <form onSubmit={handleSubmit} className="">
-        <div className="flex justify-between w-full items-center gap-2">
+      <form onSubmit={handleSubmit} className="mt-4">
+        <div className="flex justify-between items-center gap-2">
           <input
             type="text"
             onChange={(e) => setNewMessage(e.target.value)}
             value={newMessage}
-            className="flex-grow bg-transparent border border-slate-200 px-4 py-2 rounded-md"
+            className="w-[80%] bg-transparent border border-slate-200 px-4 py-2 rounded-md"
             placeholder="Type your message here..."
           />
           <button
             type="submit"
-            className="flex items-center gap-2 border border-slate-300 px-4 py-2"
+            className="flex items-center gap-2 border rounded-md border-slate-300 px-4 py-2"
           >
             Send
             <svg
@@ -132,7 +122,7 @@ const Chat = ({}) => {
               viewBox="0 0 24 24"
               strokeWidth={1.5}
               stroke="currentColor"
-              className="size-6"
+              className="h-6 w-6"
             >
               <path
                 strokeLinecap="round"
