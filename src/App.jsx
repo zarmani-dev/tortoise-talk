@@ -24,8 +24,7 @@ const App = () => {
     const roomName = inputRef.current.value;
     if (roomName.trim() === "") return;
 
-    await createRoom(roomName);
-    navigate(`/${roomName}`);
+    await createRoom(roomName.split(" ").join(""));
     inputRef.current.value = "";
   };
 

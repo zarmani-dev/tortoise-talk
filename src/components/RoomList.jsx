@@ -1,16 +1,30 @@
 import React, { useEffect } from "react";
 import roomStore from "../store/roomStore";
 import { Link } from "react-router-dom";
+import useActiveUsers from "../hooks/useActiveUsers";
+import messageStore from "../store/messageStore";
 
 const RoomList = () => {
   const { rooms, fetchRooms, activeUsers, fetchActiveUsersInRoom } =
     roomStore();
 
+  // const { currentRoom } = messageStore();
+
+  // const { activeUsers } = useActiveUsers(currentRoom);
+  // console.log(activeUsers);
+
   useEffect(() => {
     const unsubscribe = fetchRooms();
-    rooms.forEach((room) => fetchActiveUsersInRoom(room.id));
     return () => unsubscribe();
-  }, []);
+  }, [fetchRooms]);
+
+  useEffect(() => {
+    if (rooms.length > 0) {
+      rooms.forEach((room) => {
+        fetchActiveUsersInRoom(room.name); // Fetch active users for each room
+      });
+    }
+  }, [rooms, fetchActiveUsersInRoom]);
 
   return (
     <div className="container px-10 pt-10">
@@ -28,13 +42,12 @@ const RoomList = () => {
               <h1 className="text-2xl font-bold">{room.name}</h1>
               <div
                 className={`size-3 rounded-full ${
-                  Object.keys(activeUsers).length === 0
-                    ? "bg-red-500"
-                    : "bg-green-500"
+                  activeUsers[room.name] == null ? "bg-red-500" : "bg-green-500"
                 }`}
               ></div>
             </div>
-            <p>`{activeUsers[room.id] || 0}` users online</p>
+            <p>`{activeUsers[room.name] || 0}` users online</p>
+            {/* <p>{console.log(activeUsers)}</p> */}
             {/* {room.name} - {activeUsers[room.id] || 0} users online */}
           </Link>
         ))}

@@ -23,6 +23,7 @@ const Auth = ({ setIsAuth, setUser }) => {
           displayName: user.displayName,
           email: user.email,
           online: true,
+          roomId: null,
           lastActive: serverTimestamp(),
         },
         { merge: true }

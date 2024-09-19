@@ -2,13 +2,15 @@ import { create } from "zustand";
 import {
   addDoc,
   collection,
+  doc,
   onSnapshot,
   orderBy,
   query,
   serverTimestamp,
+  updateDoc,
   where,
 } from "firebase/firestore";
-import { db } from "../firebase-config";
+import { auth, db } from "../firebase-config";
 
 const roomStore = create((set) => ({
   rooms: [], // Store all rooms and their details
@@ -46,6 +48,22 @@ const roomStore = create((set) => ({
       set({ activeUsers });
     });
     return unsubscribe;
+  },
+
+  joinRoom: async (roomId) => {
+    const user = auth.currentUser;
+    if (user) {
+      const userRef = doc(db, "users", user.uid);
+      await updateDoc(userRef, { roomId });
+    }
+  },
+
+  leaveRoom: async (roomId) => {
+    const user = auth.currentUser;
+    if (user) {
+      const userRef = doc(db, "users", user.uid);
+      await updateDoc(userRef, { roomId: null });
+    }
   },
 }));
 

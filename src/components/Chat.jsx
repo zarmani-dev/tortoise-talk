@@ -23,11 +23,12 @@ const Chat = ({}) => {
 
   const { messages, fetchMessages, currentRoom, setCurrentRoom } =
     messageStore();
-  const { rooms } = roomStore();
+  const { rooms, joinRoom, leaveRoom } = roomStore();
 
   const { sendMessage } = useMessages(currentRoom);
 
   useEffect(() => {
+    joinRoom(roomId);
     setCurrentRoom(roomId);
     const unsubscribe = fetchMessages(currentRoom);
     return () => unsubscribe();
@@ -68,6 +69,7 @@ const Chat = ({}) => {
 
       <div className="flex justify-between items-center mb-5">
         <Link
+          onClick={() => leaveRoom(roomId)}
           to="/"
           className="bg-slate-300 px-4 py-1 text-gray-950 rounded-md"
         >
