@@ -53,7 +53,7 @@ const App = () => {
   };
 
   return (
-    <div className="">
+    <>
       {!isAuth && <Auth setIsAuth={setIsAuth} setUser={setUser} />}
 
       {/* Sign Out Button */}
@@ -89,7 +89,7 @@ const App = () => {
       )}
 
       {isAuth && <RoomList />}
-    </div>
+    </>
   );
 };
 export default App;
