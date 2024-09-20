@@ -15,15 +15,23 @@ import { auth, db } from "../firebase-config";
 import messageStore from "../store/messageStore";
 import roomStore from "../store/roomStore";
 import useMessages from "../hooks/useMessages";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { HiArrowNarrowLeft } from "react-icons/hi";
+import { HiArrowLongLeft } from "react-icons/hi2";
+import { MdOutlineGroup } from "react-icons/md";
+import { AiOutlineClear } from "react-icons/ai";
+import { PiBroom } from "react-icons/pi";
+import { GrSend } from "react-icons/gr";
+import toast from "react-hot-toast";
 
 const Chat = ({}) => {
   const [newMessage, setNewMessage] = useState("");
   const { roomId } = useParams();
+  const navigate = useNavigate();
 
-  const { messages, fetchMessages, currentRoom, setCurrentRoom } =
+  const { messages, fetchMessages, clearMessage, currentRoom, setCurrentRoom } =
     messageStore();
-  const { rooms, joinRoom, leaveRoom } = roomStore();
+  const { rooms, fetchRooms, joinRoom, leaveRoom, deleteRoom } = roomStore();
 
   const { sendMessage } = useMessages(currentRoom);
 
@@ -34,7 +42,10 @@ const Chat = ({}) => {
     return () => unsubscribe();
   }, [currentRoom]);
 
-  const messagesRef = collection(db, "messages");
+  useEffect(() => {
+    const unsubscribe = fetchRooms();
+    return () => unsubscribe();
+  }, [fetchRooms]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -43,20 +54,25 @@ const Chat = ({}) => {
   };
 
   const onClearMessage = async () => {
-    const prompt = window.prompt("Enter password to clear history");
-    if (prompt === "ok") {
-      try {
-        const queryMessages = query(messagesRef, where("room", "==", roomId));
-        const snapShot = await getDocs(queryMessages); // Fetch current messages
-        snapShot.forEach(async (document) => {
-          await deleteDoc(doc(db, "messages", document.id)); // Delete each document
-        });
-      } catch (error) {
-        console.error("Error clearing messages:", error);
+    clearMessage(roomId);
+    // const prompt = window.prompt("Enter password to clear history");
+    // if (prompt === "ok") {
+    //   clearMessage();
+    // } else {
+    //   alert("You don't have access to clear history.");
+    // }
+  };
+
+  const onDeleteRoom = () => {
+    // deleteRoom(currentRoom.id);
+    rooms.forEach((room) => {
+      if (room.name === roomId) {
+        deleteRoom(room.id);
+        toast.success("Room deleted successfully!");
+        navigate("/");
       }
-    } else {
-      alert("You don't have access to clear history.");
-    }
+    });
+    // navigate("/");
   };
 
   return (
@@ -73,27 +89,22 @@ const Chat = ({}) => {
           to="/"
           className="bg-slate-300 px-4 py-1 text-gray-950 rounded-md"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={1.5}
-            stroke="currentColor"
-            className="h-6 w-6"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M6.75 15.75 3 12m0 0 3.75-3.75M3 12h18"
-            />
-          </svg>
+          <HiArrowLongLeft />
         </Link>
-        <button
-          onClick={onClearMessage}
-          className="border border-slate-200 px-4 py-1 rounded-md"
-        >
-          Clear History
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onClearMessage}
+            className="border border-slate-200 px-4 py-1 rounded-md"
+          >
+            <PiBroom className="size-5" />
+          </button>
+          <button
+            onClick={onDeleteRoom}
+            className="flex items-center gap-2 bg-red-600 px-4 py-1 rounded-md"
+          >
+            Delete Room
+          </button>
+        </div>
       </div>
 
       <div className="mb-2">
@@ -105,12 +116,12 @@ const Chat = ({}) => {
       </div>
 
       <form onSubmit={handleSubmit} className="mt-4">
-        <div className="flex justify-between items-center gap-2">
+        <div className="flex items-center gap-2 w-full">
           <input
             type="text"
             onChange={(e) => setNewMessage(e.target.value)}
             value={newMessage}
-            className="w-[80%] bg-transparent border border-slate-200 px-4 py-2 rounded-md"
+            className="flex-grow w-full  md:w-auto bg-transparent border border-slate-200 px-2 py-2 rounded-md"
             placeholder="Type your message here..."
           />
           <button
@@ -118,20 +129,7 @@ const Chat = ({}) => {
             className="flex items-center gap-2 border rounded-md border-slate-300 px-4 py-2"
           >
             Send
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="h-6 w-6"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5"
-              />
-            </svg>
+            <GrSend className="size-6 font-thin" />
           </button>
         </div>
       </form>

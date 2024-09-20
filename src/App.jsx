@@ -9,6 +9,7 @@ import { onAuthStateChanged, signOut } from "firebase/auth";
 import RoomList from "./components/RoomList";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import roomStore from "./store/roomStore";
+import toast from "react-hot-toast";
 const cookies = new Cookies();
 
 const App = () => {
@@ -25,6 +26,7 @@ const App = () => {
     if (roomName.trim() === "") return;
 
     await createRoom(roomName.split(" ").join(""));
+    toast.success("Room created successfully!");
     inputRef.current.value = "";
   };
 
@@ -69,7 +71,10 @@ const App = () => {
 
       {isAuth && (
         <div className="container">
-          <div className="flex flex-col gap-2 w-2/3">
+          <form
+            onSubmit={(e) => e.preventDefault()}
+            className="flex flex-col items-start gap-2 w-2/3"
+          >
             <label>Enter Room Name</label>
             <input
               type="text"
@@ -77,13 +82,13 @@ const App = () => {
               placeholder="Eg. Chill out"
               className="bg-transparent border border-slate-200 rounded-md px-4 py-2"
             />
-            <Link
+            <button
               onClick={onCreateRoom}
-              className="text-left text-slate-300 border border-slate-200 px-4 py-2 rounded-md w-28"
+              className="text-left text-slate-300 border border-slate-200 px-4 py-2 rounded-md "
             >
-              Enter Chat
-            </Link>
-          </div>
+              Create Room
+            </button>
+          </form>
         </div>
       )}
 

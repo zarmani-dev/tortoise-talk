@@ -78,7 +78,7 @@ const Auth = ({ setIsAuth, setUser }) => {
           }
           className="border bg-slate-300/90 w-full rounded-xl px-4 py-1 text-gray-950 text-xl mt-3"
         >
-          Go
+          Continue
         </button>
       </div>
     </div>

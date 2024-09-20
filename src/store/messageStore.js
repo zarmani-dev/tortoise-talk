@@ -1,5 +1,8 @@
 import {
   collection,
+  deleteDoc,
+  doc,
+  getDocs,
   onSnapshot,
   orderBy,
   query,
@@ -28,6 +31,14 @@ const messageStore = create((set) => ({
     });
 
     return unsubscribe;
+  },
+  clearMessage: async (roomId) => {
+    const messagesRef = collection(db, "messages");
+    const queryMessages = query(messagesRef, where("room", "==", roomId));
+    const snapShot = await getDocs(queryMessages); // Fetch current messages
+    snapShot.forEach(async (document) => {
+      await deleteDoc(doc(db, "messages", document.id)); // Delete each document
+    });
   },
 
   sendMessage: () => {},

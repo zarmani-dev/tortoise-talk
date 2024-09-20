@@ -1,8 +1,7 @@
 import React, { useEffect } from "react";
 import roomStore from "../store/roomStore";
 import { Link } from "react-router-dom";
-import useActiveUsers from "../hooks/useActiveUsers";
-import messageStore from "../store/messageStore";
+import { IoEnterOutline } from "react-icons/io5";
 
 const RoomList = () => {
   const { rooms, fetchRooms, activeUsers, fetchActiveUsersInRoom } =
@@ -33,12 +32,11 @@ const RoomList = () => {
       </h3>
       <ul className="grid grid-cols-1 md:grid-cols-3 gap-3">
         {rooms.map((room) => (
-          <Link
+          <div
             key={room.id}
-            to={`/${room.name}`}
             className="border border-slate-300 p-3 rounded-md mb-3"
           >
-            <div className="flex justify-between items-center">
+            <div className="flex  justify-between items-center">
               <h1 className="text-2xl font-bold">{room.name}</h1>
               <div
                 className={`size-3 rounded-full ${
@@ -46,10 +44,14 @@ const RoomList = () => {
                 }`}
               ></div>
             </div>
-            <p>`{activeUsers[room.name] || 0}` users online</p>
-            {/* <p>{console.log(activeUsers)}</p> */}
-            {/* {room.name} - {activeUsers[room.id] || 0} users online */}
-          </Link>
+            <p className="mt-2">`{activeUsers[room.name] || 0}` users online</p>
+            <Link
+              to={`/${room.name}`}
+              className="mt-4 inline-flex items-center   gap-1 border border-slate-200 px-2 py-1 rounded-md"
+            >
+              Enter <IoEnterOutline className="size-5" />{" "}
+            </Link>
+          </div>
         ))}
       </ul>
     </div>

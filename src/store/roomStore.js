@@ -2,6 +2,7 @@ import { create } from "zustand";
 import {
   addDoc,
   collection,
+  deleteDoc,
   doc,
   onSnapshot,
   orderBy,
@@ -29,7 +30,12 @@ const roomStore = create((set) => ({
 
   createRoom: async (roomName) => {
     const roomsCollection = collection(db, "rooms");
-    const newRoom = { name: roomName, createAt: serverTimestamp() };
+    const user = auth.currentUser;
+    const newRoom = {
+      name: roomName,
+      createAt: serverTimestamp(),
+      createdBy: user.uid,
+    };
     await addDoc(roomsCollection, newRoom);
   },
 
@@ -58,12 +64,16 @@ const roomStore = create((set) => ({
     }
   },
 
-  leaveRoom: async (roomId) => {
+  leaveRoom: async () => {
     const user = auth.currentUser;
     if (user) {
       const userRef = doc(db, "users", user.uid);
       await updateDoc(userRef, { roomId: null });
     }
+  },
+
+  deleteRoom: async (roomId) => {
+    await deleteDoc(doc(db, "rooms", roomId));
   },
 }));
 
